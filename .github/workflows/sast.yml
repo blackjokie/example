@@ -16,17 +16,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-				
-      - name: Set Project Name
-        id: set_project_name
-        run: echo "::set-output name=project_name::$(echo ${GITHUB_REPOSITORY##*/})"
 
       - name: Setup SonarQube Scanner
         uses: SonarSource/sonarqube-scan-action@v2
         with:
           sonarLogin: ${{ secrets.SONAR_TOKEN }}  # Set SonarQube token as a secret
           sonarProjectKey: example-project
-          sonarProjectName: ${{ steps.set_project_name.outputs.project_name }}
+          sonarProjectName: example
           sonarSources: .
           sonarGo:
             goVersion: "1.19"  # Specify Go version
