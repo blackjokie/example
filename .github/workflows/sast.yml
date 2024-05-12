@@ -10,16 +10,18 @@ jobs:
   sonarqube-analysis:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on    
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Install and Run GoSec
-        run: |
-          curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.1
-          which gosec
-          ./home/runner/go/bin/gosec -no-fail -tests -fmt=sonarqube -out=gosec-results.json ./...
+        uses: securego/gosec@master
+        with:
+          args: |
+            -no-fail -tests -fmt=sonarqube -out=gosec-results.json ./...
 
       - name: Setup SonarQube Scanner
         run: |
