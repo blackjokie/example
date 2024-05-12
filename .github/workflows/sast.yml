@@ -7,28 +7,30 @@ on:
   pull_request:
       types: [opened, synchronize, reopened]
 jobs:
+
+  sast:
+    name: GoSec Analysis
+    runs-on: ubuntu-latest
+    outputs:
+      hash: ${{ steps.gosec.outputs.hash }}  
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Run GoSec
+        uses: securego/gosec@master
+        id: gosec
+        with:
+          args: |
+            -no-fail -tests -fmt=sonarqube -out=report.json ./...      
+      
   sonarqube-analysis:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
     env:
       GO111MODULE: on    
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Install and Run GoSec
-        uses: securego/gosec@master
-        with:
-          args: |
-            -no-fail -tests -fmt=sonarqube -out=report.json ./...
-            
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: artifact
-          path: report.json
-
       - name: Setup SonarQube Scanner    
         run: |
           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -O /tmp/sonar-scanner.zip
@@ -42,16 +44,13 @@ jobs:
             -Dsonar.sources=. \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.externalIssuesReportPaths=report.json
-
+            -Dsonar.externalIssuesReportPaths=${{ steps.gosec.outputs.hash }}  
       - name: Build and Test
         run: |
           go mod download
           go test -coverprofile=./coverage.out ./...
-
       - name: Publish Test Coverage to SonarQube
         uses: actions/upload-artifact@v2
         with:
           name: coverage-report
           path: ./coverage.out
-
