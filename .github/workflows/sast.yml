@@ -16,20 +16,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup SonarQube Scanner
-        uses: SonarSource/sonarqube-scan-action@v2.0.2
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          projectBaseDir: .
-          args: >
-            -Dsonar.login: ${{ secrets.SONAR_TOKEN }}  # Set SonarQube token as a secret
-            -Dsonar.projectKey: example-project
-            -Dsonar.projectName: example
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
-          sonarGo: |
-            goVersion: "1.19"  # Specify Go version
-            coverPaths: "./coverage.out"  # Path to Go test coverage report
+        run: |
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856.zip -O /tmp/sonar-scanner.zip
+          unzip /tmp/sonar-scanner.zip -d /tmp
+          mv /tmp/sonar-scanner-* /tmp/sonar-scanner
+          rm /tmp/sonar-scanner.zip
+          export PATH="$PATH:/tmp/sonar-scanner/bin"
+
+          sonar-scanner -X \
+            -Dsonar.projectKey=example \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
       - name: Install GoSec
         run: |
