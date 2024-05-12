@@ -24,7 +24,7 @@ jobs:
           sonarProjectKey: example-project
           sonarProjectName: example
           sonarSources: .
-          sonarGo:
+          sonarGo: |
             goVersion: "1.19"  # Specify Go version
             coverPaths: "./coverage.out"  # Path to Go test coverage report
 
