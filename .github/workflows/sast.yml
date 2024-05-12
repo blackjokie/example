@@ -40,7 +40,7 @@ jobs:
           gosec -fmt=json -out=gosec-results.json ./...
 
       - name: Publish GoSec results as SonarQube issues
-        uses: SonarSource/sonarqube-github-action@v2.0.2
+        uses: SonarSource/sonarqube-github-action@master
         with:
           tokens: ${{ secrets.SONAR_TOKEN }}
           projectBaseDir: .
