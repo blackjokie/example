@@ -31,11 +31,12 @@ jobs:
           rm /tmp/sonar-scanner.zip
           export PATH="$PATH:/tmp/sonar-scanner/bin"
 
-          sonar-scanner -X \
+          sonar-scanner \
             -Dsonar.projectKey=example \
             -Dsonar.sources=. \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.externalIssuesReportPaths=report.json
 
       - name: Build and Test
         run: |
