@@ -15,6 +15,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install GoSec
+        run: |
+          curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.1
+
+      - name: Run GoSec
+        run: |
+          gosec -no-fail -tests -fmt=sonarqube -out=gosec-results.json ./...
+
       - name: Setup SonarQube Scanner
         run: |
           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856.zip -O /tmp/sonar-scanner.zip
@@ -28,22 +36,7 @@ jobs:
             -Dsonar.sources=. \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-
-      - name: Install GoSec
-        run: |
-          curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.1
-
-      - name: Run GoSec
-        run: |
-          gosec -fmt=json -out=gosec-results.json ./...
-
-      - name: Publish GoSec results as SonarQube issues
-        uses: SonarSource/sonarqube-github-action@master
-        with:
-          tokens: ${{ secrets.SONAR_TOKEN }}
-          projectBaseDir: .
-          reportPaths: gosec-results.json
-          serverUrl: ${{ secrets.SONAR_HOST_URL }}
+            -Dsonar.externalIssuesReportPaths=gosec-results.json
 
       - name: Build and Test
         run: |
