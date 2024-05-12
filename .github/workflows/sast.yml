@@ -3,10 +3,10 @@ name: SonarQube Analysis for Golang with GoSec
 on:
   push:
     branches:
-      - main  # Modify branch name as needed
+      - master  # Modify branch name as needed
   pull_request:
     branches:
-      - main  # Modify branch name as needed
+      - master  # Modify branch name as needed
 
 jobs:
   sonarqube-analysis:
