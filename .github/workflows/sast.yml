@@ -21,7 +21,7 @@ jobs:
         uses: securego/gosec@master
         with:
           args: |
-            -no-fail -tests -fmt=sonarqube -out=gosec-results.json ./...
+            -no-fail -tests -fmt=sonarqube -out=report.json ./...
 
       - name: Setup SonarQube Scanner
         run: |
@@ -36,7 +36,6 @@ jobs:
             -Dsonar.sources=. \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.externalIssuesReportPaths=gosec-results.json
 
       - name: Build and Test
         run: |
