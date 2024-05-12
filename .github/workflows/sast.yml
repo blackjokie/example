@@ -1,0 +1,62 @@
+name: SonarQube Analysis for Golang with GoSec
+
+on:
+  push:
+    branches:
+      - main  # Modify branch name as needed
+  pull_request:
+    branches:
+      - main  # Modify branch name as needed
+
+jobs:
+  sonarqube-analysis:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+				
+      - name: Set Project Name
+        id: set_project_name
+        run: echo "::set-output name=project_name::$(echo ${GITHUB_REPOSITORY##*/})"
+
+      - name: Setup SonarQube Scanner
+        uses: SonarSource/sonarqube-scan-action@v2
+        with:
+          sonarLogin: ${{ secrets.SONAR_TOKEN }}  # Set SonarQube token as a secret
+          sonarProjectKey: example-project
+          sonarProjectName: ${{ steps.set_project_name.outputs.project_name }}
+          sonarSources: .
+          sonarGo:
+            goVersion: "1.19"  # Specify Go version
+            coverPaths: "./coverage.out"  # Path to Go test coverage report
+
+      - name: Install GoSec
+        run: |
+          curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.1
+
+      - name: Run GoSec
+        run: |
+          gosec -fmt=json -out=gosec-results.json ./...
+
+      - name: Publish GoSec results as SonarQube issues
+        uses: SonarSource/sonarqube-github-action@master
+        with:
+          tokens: ${{ secrets.SONAR_TOKEN }}
+          projectBaseDir: .
+          reportPaths: gosec-results.json
+          serverUrl: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: Build and Test
+        run: |
+          go mod download
+          go test -coverprofile=./coverage.out ./...
+
+      - name: Publish Test Coverage to SonarQube
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: ./coverage.out
+
+
