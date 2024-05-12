@@ -21,10 +21,12 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
-          sonarLogin: ${{ secrets.SONAR_TOKEN }}  # Set SonarQube token as a secret
-          sonarProjectKey: example-project
-          sonarProjectName: example
-          sonarSources: .
+          projectBaseDir: .
+          args: >
+            -Dsonar.login: ${{ secrets.SONAR_TOKEN }}  # Set SonarQube token as a secret
+            -Dsonar.projectKey: example-project
+            -Dsonar.projectName: example
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
           sonarGo: |
             goVersion: "1.19"  # Specify Go version
             coverPaths: "./coverage.out"  # Path to Go test coverage report
@@ -38,7 +40,7 @@ jobs:
           gosec -fmt=json -out=gosec-results.json ./...
 
       - name: Publish GoSec results as SonarQube issues
-        uses: SonarSource/sonarqube-scan-action@v2.0.2
+        uses: SonarSource/sonarqube-github-action@v2.0.2
         with:
           tokens: ${{ secrets.SONAR_TOKEN }}
           projectBaseDir: .
