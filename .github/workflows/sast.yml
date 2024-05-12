@@ -5,9 +5,7 @@ on:
     branches:
       - master  # Modify branch name as needed
   pull_request:
-    branches:
-      - master  # Modify branch name as needed
-
+      types: [opened, synchronize, reopened]
 jobs:
   sonarqube-analysis:
     name: SonarQube Analysis
@@ -15,10 +13,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup SonarQube Scanner
-        uses: SonarSource/sonarqube-scan-action@v2
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           sonarLogin: ${{ secrets.SONAR_TOKEN }}  # Set SonarQube token as a secret
           sonarProjectKey: example-project
